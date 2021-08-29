@@ -16,8 +16,14 @@ type MessageUser struct {
 	Age     int64  `json:"age"`
 	Email   string `json:"email"`
 	Balance uint   `json:"balance"`
-
 	// action string `json:"action"`
+}
+
+type PostMessageUser struct {
+	Id            int64  `json:"id"`
+	Sum           int64  `json:"sum"`
+	Action        string `json:"action"`
+	DestinationId int64  `json:"destination"`
 }
 
 type Manager interface {
@@ -42,7 +48,7 @@ func init() {
 }
 
 func (mgr *manager) AddUser(usr *MessageUser) (err error) {
-	var new_user model.User = model.User{Name: usr.Name, Age: uint(usr.Age), Email: usr.Email}
+	var new_user model.User = model.User{Name: usr.Name, Age: uint(usr.Age), Email: usr.Email, Balance: usr.Balance}
 	fmt.Println(new_user)
 	mgr.db.Create(&new_user)
 	return
@@ -50,7 +56,8 @@ func (mgr *manager) AddUser(usr *MessageUser) (err error) {
 
 func (mgr *manager) GetBalance(id uint64) []byte {
 	var usr model.User
-	mgr.db.First(usr, "Id = ?", id)
+	fmt.Println(id)
+	mgr.db.First(&usr, "Id = ?", id)
 
 	js, err := json.Marshal(MessageUser{int64(usr.Id), usr.Name, int64(usr.Age), usr.Email, usr.Balance})
 	if err != nil {

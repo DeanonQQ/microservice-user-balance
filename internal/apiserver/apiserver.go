@@ -22,5 +22,5 @@ func (s *APIServer) Start() error {
 }
 
 func (s *APIServer) configureRouter() {
-	http.HandleFunc("/report/users/", s.handleUser())
+	http.HandleFunc("/user/balance/", s.handleUserBalance())
 }

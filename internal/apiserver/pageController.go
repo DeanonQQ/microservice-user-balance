@@ -32,7 +32,7 @@ func decodeBody(msg *dbprovider.MessageUser, w http.ResponseWriter, r *http.Requ
 	return msg, err
 }
 
-func (s *APIServer) handleUser() http.HandlerFunc {
+func (s *APIServer) handleUserBalance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		switch r.Method {
@@ -43,15 +43,20 @@ func (s *APIServer) handleUser() http.HandlerFunc {
 			if err != nil {
 				log.Print("Argument in invalid!")
 			}
-
 			js := dbprovider.Mgr.GetBalance(argToFind_to_uint)
-
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(js)
 
 		case http.MethodPost:
 			var msg dbprovider.MessageUser
 			decodeBody(&msg, w, r)
+
+			if &msg.Action == "add" {
+
+			} else if &msg.Action == "substract" {
+
+			}
+
 			dbprovider.Mgr.AddUser(&msg)
 
 			output, err := json.Marshal(msg)
