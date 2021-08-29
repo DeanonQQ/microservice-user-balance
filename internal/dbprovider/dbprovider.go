@@ -29,6 +29,7 @@ type PostMessageUser struct {
 type Manager interface {
 	AddUser(usr *MessageUser) error
 	GetBalance(id uint64) []byte
+	AddBalance(id uint64, sum uint64) []byte
 	// FindUser(usr *MessageUser) (*MessageUser, error)
 }
 
@@ -59,6 +60,18 @@ func (mgr *manager) GetBalance(id uint64) []byte {
 	fmt.Println(id)
 	mgr.db.First(&usr, "Id = ?", id)
 
+	js, err := json.Marshal(MessageUser{int64(usr.Id), usr.Name, int64(usr.Age), usr.Email, usr.Balance})
+	if err != nil {
+		log.Fatal("Failed to find")
+	}
+	return js
+}
+func (mgr *manager) AddBalance(id uint64, sum uint64) []byte {
+	var usr model.User
+	fmt.Println(id)
+	mgr.db.Model(&usr).Where("Id = ?", id).Update("Balance", gorm.Expr("Balance + ?", sum))
+
+	mgr.db.First(&usr, "Id = ?", id)
 	js, err := json.Marshal(MessageUser{int64(usr.Id), usr.Name, int64(usr.Age), usr.Email, usr.Balance})
 	if err != nil {
 		log.Fatal("Failed to find")

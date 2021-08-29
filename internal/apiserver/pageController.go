@@ -32,6 +32,20 @@ func decodeBody(msg *dbprovider.MessageUser, w http.ResponseWriter, r *http.Requ
 	return msg, err
 }
 
+func decodeBodyPost(msg *dbprovider.PostMessageUser, w http.ResponseWriter, r *http.Request) (*dbprovider.PostMessageUser, error) {
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+	// Unmarshal
+	err = json.Unmarshal(b, msg)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+	return msg, err
+}
+
 func (s *APIServer) handleUserBalance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -39,33 +53,43 @@ func (s *APIServer) handleUserBalance() http.HandlerFunc {
 		case http.MethodGet:
 			arg := r.URL.Query()
 			argToFind := arg.Get("Id")
-			argToFind_to_uint, err := strconv.ParseUint(argToFind, 10, 64)
+			argToFindToUint, err := strconv.ParseUint(argToFind, 10, 64)
 			if err != nil {
 				log.Print("Argument in invalid!")
 			}
-			js := dbprovider.Mgr.GetBalance(argToFind_to_uint)
+			js := dbprovider.Mgr.GetBalance(argToFindToUint)
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(js)
 
 		case http.MethodPost:
-			var msg dbprovider.MessageUser
-			decodeBody(&msg, w, r)
+			var msg dbprovider.PostMessageUser
+			var ms dbprovider.MessageUser
+			// decodeBody(&ms, w, r)
+			decodeBodyPost(&msg, w, r)
 
-			if &msg.Action == "add" {
+			if msg.Action == "Add" {
 
-			} else if &msg.Action == "substract" {
+				fmt.Println(1)
 
+				js := dbprovider.Mgr.AddBalance(uint64(msg.Id), uint64(msg.Sum))
+				w.Header().Set("Content-Type", "application/json")
+				w.Write(js)
+
+			} else if msg.Action == "Substract" {
+
+			} else if msg.Action == "Send" {
+
+			} else {
+				dbprovider.Mgr.AddUser(&ms)
+				output, err := json.Marshal(ms)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
+				w.Header().Set("content-type", "application/json")
+				w.Write(output)
 			}
 
-			dbprovider.Mgr.AddUser(&msg)
-
-			output, err := json.Marshal(msg)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-			w.Header().Set("content-type", "application/json")
-			w.Write(output)
 		case http.MethodPut:
 			fmt.Println("PUT")
 		case http.MethodDelete:
