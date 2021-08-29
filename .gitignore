@@ -14,3 +14,4 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 internal/apiserver/pageController.go
+.DS_Store
