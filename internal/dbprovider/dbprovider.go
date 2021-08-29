@@ -16,7 +16,6 @@ type MessageUser struct {
 	Age     int64  `json:"age"`
 	Email   string `json:"email"`
 	Balance int64  `json:"balance"`
-	// action string `json:"action"`
 }
 
 type PostMessageUser struct {
@@ -31,6 +30,7 @@ type Manager interface {
 	GetBalance(id uint64) []byte
 	AddBalance(id uint64, sum uint64) []byte
 	SubBalance(id uint64, sum uint64) []byte
+	SendBalance(id uint64, destId uint64, sum uint64) []byte
 	// FindUser(usr *MessageUser) (*MessageUser, error)
 }
 
@@ -101,7 +101,26 @@ func (mgr *manager) SubBalance(id uint64, sum uint64) []byte {
 	}
 }
 
-// func (mgr *manager, key string) FindUser(usr *MessageUser) {
+func (mgr *manager) SendBalance(id uint64, destId uint64, sum uint64) []byte {
+	var usr model.User
+	var usr2 model.User
+	mgr.db.First(&usr, "Id = ?", id)
 
-// 	return (MessageUser)
-// }
+	if usr.Balance-int64(sum) > 0 {
+		mgr.db.Model(&usr).Where("Id = ?", id).Update("Balance", gorm.Expr("Balance - ?", sum))
+		mgr.db.First(&usr2, "Id = ?", destId)
+		mgr.db.Model(&usr2).Where("Id = ?", destId).Update("Balance", gorm.Expr("Balance + ?", sum))
+		js, err := json.Marshal("Success")
+		if err != nil {
+			log.Fatal("Fail")
+		}
+		return js
+
+	} else {
+		js, err := json.Marshal("Balance is less than 0")
+		if err != nil {
+			log.Fatal("Failed to find")
+		}
+		return js
+	}
+}

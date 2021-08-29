@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"fmt"
-
 	dbprovider "github.com/deanonqq/microservice-user-balance/internal/dbprovider"
 
 	"io/ioutil"
@@ -64,7 +62,6 @@ func (s *APIServer) handleUserBalance() http.HandlerFunc {
 		case http.MethodPost:
 			var msg dbprovider.PostMessageUser
 			var ms dbprovider.MessageUser
-			// decodeBody(&ms, w, r)
 			decodeBodyPost(&msg, w, r)
 
 			if msg.Action == "Add" {
@@ -81,6 +78,19 @@ func (s *APIServer) handleUserBalance() http.HandlerFunc {
 
 			} else if msg.Action == "Send" {
 
+				if msg.DestinationId != 0 {
+					js := dbprovider.Mgr.SendBalance(uint64(msg.Id), uint64(msg.DestinationId), uint64(msg.Sum))
+					w.Header().Set("Content-Type", "application/json")
+					w.Write(js)
+				} else {
+					js, err := json.Marshal("Destination user is none")
+					if err != nil {
+						log.Fatal("Fail")
+					}
+					w.Header().Set("Content-Type", "application/json")
+					w.Write(js)
+				}
+
 			} else {
 				dbprovider.Mgr.AddUser(&ms)
 				output, err := json.Marshal(ms)
@@ -91,11 +101,6 @@ func (s *APIServer) handleUserBalance() http.HandlerFunc {
 				w.Header().Set("content-type", "application/json")
 				w.Write(output)
 			}
-
-		case http.MethodPut:
-			fmt.Println("PUT")
-		case http.MethodDelete:
-			fmt.Println("DELETE")
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
