@@ -10,5 +10,5 @@ type User struct {
 	Name    string
 	Age     int64
 	Email   string
-	Balance int64
+	Balance float64
 }
