@@ -6,9 +6,9 @@ import (
 
 type User struct {
 	gorm.Model
-	Id      uint
+	Id      int64
 	Name    string
-	Age     uint
+	Age     int64
 	Email   string
-	Balance uint
+	Balance int64
 }

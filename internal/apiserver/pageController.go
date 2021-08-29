@@ -69,13 +69,15 @@ func (s *APIServer) handleUserBalance() http.HandlerFunc {
 
 			if msg.Action == "Add" {
 
-				fmt.Println(1)
-
 				js := dbprovider.Mgr.AddBalance(uint64(msg.Id), uint64(msg.Sum))
 				w.Header().Set("Content-Type", "application/json")
 				w.Write(js)
 
 			} else if msg.Action == "Substract" {
+
+				js := dbprovider.Mgr.SubBalance(uint64(msg.Id), uint64(msg.Sum))
+				w.Header().Set("Content-Type", "application/json")
+				w.Write(js)
 
 			} else if msg.Action == "Send" {
 
